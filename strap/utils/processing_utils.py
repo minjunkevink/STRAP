@@ -34,7 +34,7 @@ class HDF5Dataset(Dataset):
             
             demo_group = f[file_structure.demo_group] if file_structure.demo_group is not None else f
             
-            demo_keys = list(f.keys())
+            demo_keys = list(demo_group.keys())
 
             images = []
             langs = []
