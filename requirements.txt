@@ -1,0 +1,7 @@
+numpy<2
+tqdm
+torch
+torchvision
+transformers
+opencv-python
+h5py
