@@ -50,7 +50,7 @@ class BaseEncoder(ABC):
         """
         features = []
         with torch.no_grad():
-            for (imgs, actions), in tqdm(
+            for imgs, actions, language in tqdm(
                     dataloader, desc="Extracting features", disable=(not verbose)
             ):
                 inputs = self.preprocess(imgs, actions)

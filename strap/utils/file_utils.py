@@ -72,10 +72,10 @@ class DatasetFilePointer:
         
         if not is_file:
             # create an empty file. This helps with not having entirly corrupted files if the program crashes
-            self.save_file = h5py.File(self.save_path, "w", swmr=True)
+            self.save_file = h5py.File(self.save_path, "w")
             self.save_file.close()
         
-        self.save_file = h5py.File(self.save_path, "a", swmr=True)
+        self.save_file = h5py.File(self.save_path, "a")
         if self.save_file.get("data") is None:
             self.save_file.create_group("data")
 

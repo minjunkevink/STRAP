@@ -33,7 +33,7 @@ class HDF5Dataset(Dataset):
         with h5py.File(dataset_path, "r", swmr=True) as f:
             language_instruction = get_language_instruction(f)
             
-            f = f[file_structure.data_group] if file_structure.data_group is not None else f
+            f = f[file_structure.demo_group] if file_structure.demo_group is not None else f
             
             demo_keys = list(f.keys())
 
@@ -42,7 +42,7 @@ class HDF5Dataset(Dataset):
             actions = []
             for k in tqdm(
                     demo_keys,
-                    disable=(not verbose),
+                    disable=True,
             ):
                 observations = resize_batch(
                     np.array(f[k][img_key]), img_size

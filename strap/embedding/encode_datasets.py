@@ -1,11 +1,14 @@
-from .encoders import CLIP, DINOv2
-from .embedding_helper import embed_dataset
+from strap.embedding.encoders import CLIP, DINOv2
+from strap.embedding.embedding_helper import embed_dataset
+from tqdm.auto import tqdm
 """
 Notes:
 - If your embedding process crashes, there is a chance that the last embedding file being 
     written to will be corrupted.
 - If your process crashes, the logic to check if a file has already been processed might mistakently skip some files.
 """
+
+VERBOSE = True
 
 def get_encoders():
     """
@@ -40,17 +43,20 @@ def embed_datasets():
     
     saver_threads = 1
     
-    flip_imgs = False
+    flip_images = False
     batch_size = 32
     image_size = (224,224)
-    print("\033[94m" + f"Flip imgs is {flip_imgs}" + "\033[0m")
+    print("\033[94m" + f"Flip imgs is {flip_images}" + "\033[0m")
 
     
-    for dataset in datasets:
+    for dataset in tqdm(datasets, desc="Embedding datasets", disable=(not VERBOSE)):
         embed_dataset(  dataset, 
                         encoders,
                         saver_threads=saver_threads,
-                        flip_imgs=flip_imgs, 
+                        flip_images=flip_images, 
                         batch_size=batch_size,
                         image_size=image_size,
-                        verbose=False)
+                        verbose=VERBOSE)
+
+if __name__ == "__main__":
+    embed_datasets()
