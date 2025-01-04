@@ -31,9 +31,8 @@ class HDF5Dataset(Dataset):
                 
        
         with h5py.File(dataset_path, "r", swmr=True) as f:
-            language_instruction = get_language_instruction(f)
             
-            f = f[file_structure.demo_group] if file_structure.demo_group is not None else f
+            demo_group = f[file_structure.demo_group] if file_structure.demo_group is not None else f
             
             demo_keys = list(f.keys())
 
@@ -45,15 +44,16 @@ class HDF5Dataset(Dataset):
                     disable=True,
             ):
                 observations = resize_batch(
-                    np.array(f[k][img_key]), img_size
+                    np.array(demo_group[k][img_key]), img_size
                 )
                 
                 images.append(observations)
+                language_instruction = get_language_instruction(f, k)
 
                 languages = [language_instruction] * len(observations)
 
                 langs.append(languages)
-                acts = np.array(f[k][file_structure.obs_action_group])
+                acts = np.array(demo_group[k][file_structure.obs_action_group])
                 actions.append(acts)
             langs = np.concatenate(langs, axis=0)
             images = np.concatenate(images, axis=0)

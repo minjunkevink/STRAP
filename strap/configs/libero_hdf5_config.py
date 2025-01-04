@@ -4,7 +4,7 @@ from strap.utils.file_utils import HDF5FileStructure, DatasetConfig
 from strap.utils.constants import REPO_ROOT
 
 
-def get_libero_lang_instruction(f: h5py.File) -> str:
+def get_libero_lang_instruction(f: h5py.File, demo_key) -> str:
     return json.loads(f["data"].attrs["problem_info"]).get("language_instruction", "dummy")
 
 LIBERO_CONFIG = DatasetConfig(

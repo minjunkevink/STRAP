@@ -28,7 +28,7 @@ class DatasetConfig:
     absolute_dataset_folder: str  = None      # The absolute path to the folder containing the entire dataset
     file_structure: HDF5FileStructure = None    # Structure to access data
     file_paths: str = "*.hdf5"  # The regex path of the files to include in the dataset folder
-    get_language_instruction: tp.Callable[[h5py.File], str] = None  # A function to get the language instruction from a passed hdf5 file
+    get_language_instruction: tp.Callable[[h5py.File, str], str] = None  # A function to get the language instruction from a passed hdf5 file and demo key
     # optional arguments
     embedding_extension: str = "embeds.hdf5" # The file ending of the embedded data
     exclude_path: tp.List[str] = field(default_factory=list) # Paths to exclude in dataset folder. Excluded if these strings in any part of the path
