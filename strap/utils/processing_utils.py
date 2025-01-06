@@ -19,7 +19,7 @@ class HDF5Dataset(Dataset):
             dataset_path: str,
             file_structure: "HDF5FileStructure",
             img_key: str,
-            get_language_instruction: tp.Callable[[h5py.File], str],    
+            get_language_instruction: tp.Callable[[h5py.File, str], str],
             img_size=(224, 224),
             verbose=False,
             flip_imgs=False
@@ -61,7 +61,7 @@ class HDF5Dataset(Dataset):
 
             # if imgs are upside down
             if flip_imgs:
-                images = images[:,::-1]
+                images = images[:,::-1].copy() # fix negative stride bug with copy
             # change from B x H x W x C to B x C x H x W
             if images.shape[3] == 3:
                 images = images.transpose(0, 3, 1, 2)
@@ -75,4 +75,4 @@ class HDF5Dataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        return (self.data[idx], self.lang[idx], self.actions[idx])
+        return self.data[idx], self.lang[idx], self.actions[idx]

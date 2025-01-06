@@ -1,11 +1,12 @@
 from strap.embedding.encoders import CLIP, DINOv2
 from strap.embedding.embedding_helper import embed_dataset
 from tqdm.auto import tqdm
+
 """
 Notes:
 - If your embedding process crashes, there is a chance that the last embedding file being 
     written to will be corrupted.
-- If your process crashes, the logic to check if a file has already been processed might mistakently skip some files.
+- If your process crashes, the logic to check if a file has already been processed might mistakenly skip some files.
 """
 
 VERBOSE = True
@@ -34,8 +35,8 @@ def get_datasets():
     Overwrite this method in order to change which datasets are encoded.
     You can use this with your own custom datasets as well.
     """
-    from strap.configs.libero_hdf5_config import LIBERO_CONFIG
-    return [LIBERO_CONFIG]
+    from strap.configs.libero_hdf5_config import LIBERO_CONFIG, LIBERO_90_CONFIG, LIBERO_10_CONFIG
+    return [LIBERO_10_CONFIG]
 
 def embed_datasets():
     datasets = get_datasets()
@@ -43,13 +44,13 @@ def embed_datasets():
     
     saver_threads = 1
     
-    flip_images = False
-    batch_size = 32
+    flip_images = False # Libero has upside down images
+    batch_size = 1024
     image_size = (224,224)
     print("\033[94m" + f"Flip imgs is {flip_images}" + "\033[0m")
 
     
-    for dataset in tqdm(datasets, desc="Embedding datasets", disable=(not VERBOSE)):
+    for dataset in tqdm(datasets, desc="Embedding datasets", disable=VERBOSE):
         embed_dataset(  dataset, 
                         encoders,
                         saver_threads=saver_threads,

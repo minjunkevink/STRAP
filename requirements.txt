@@ -5,3 +5,4 @@ torchvision
 transformers
 opencv-python
 h5py
+numba

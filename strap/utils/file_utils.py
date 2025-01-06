@@ -1,3 +1,4 @@
+import time
 from concurrent.futures import ThreadPoolExecutor
 import os
 from dataclasses import dataclass, field
@@ -6,7 +7,6 @@ import typing as tp
 from pathlib import Path
 import h5py
 import numpy as np 
-
 
 
 @dataclass
@@ -65,19 +65,20 @@ class DatasetFilePointer:
     save_file: h5py.File
     save_path: str
     dataset_info: DatasetFileInfo
+    demo_group_key: tp.Union[str, None] = None
     lock: threading.Lock = field(default_factory=threading.Lock)
 
     def __post_init__(self):
         is_file = os.path.isfile(self.save_path)
         
         if not is_file:
-            # create an empty file. This helps with not having entirly corrupted files if the program crashes
+            # create an empty file. This helps with not having entirely corrupted files if the program crashes
             self.save_file = h5py.File(self.save_path, "w")
             self.save_file.close()
         
         self.save_file = h5py.File(self.save_path, "a")
-        if self.save_file.get("data") is None:
-            self.save_file.create_group("data")
+        if self.demo_group_key is not None and self.save_file.get(self.demo_group_key) is None:
+            self.save_file.create_group(self.demo_group_key)
 
 
     def close(self):
@@ -85,7 +86,7 @@ class DatasetFilePointer:
 
 
 
-class DatasetSaver():
+class DatasetSaver:
     def __init__(self, num_threads, verbose=True):
         self.verbose = verbose
         self.data_registry: tp.Dict[str, DatasetFilePointer]= {}
@@ -105,7 +106,7 @@ class DatasetSaver():
         # check if the dataset exists
         with self.data_registry_lock:
             if save_path not in self.data_registry:
-                self.data_registry[save_path] = DatasetFilePointer(None, save_path, dataset_info)
+                self.data_registry[save_path] = DatasetFilePointer(None, save_path, dataset_info, dataset_structure.demo_group)
         with self.queue_lock:
             self.queue.append((save_path, embeddings, model_key, img_key, dataset_structure))
         
@@ -142,7 +143,8 @@ class DatasetSaver():
                     print(f"Error: {k} -> {model_key} -> {img_key}")
                 # move idx
                 idx_ctr += demo_len
-        
+        # flush file
+        data_pointer.save_file.flush()
         if self.verbose:
             print(f"saved {model_key}/{img_key}, at path {save_path}")
                 
@@ -164,6 +166,7 @@ class DatasetSaver():
             with self.queue_lock:
                 length = len(self.queue)
             if length > 0:
+                time.sleep(0.1)
                 continue
             break
         self.stop()

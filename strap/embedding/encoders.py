@@ -1,8 +1,7 @@
-import sys
+from abc import ABC, abstractmethod
+
 import torch
 from tqdm import tqdm
-from abc import ABC, abstractmethod
-import torch.nn.functional as F
 
 
 class BaseEncoder(ABC):

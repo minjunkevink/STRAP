@@ -40,7 +40,7 @@ def get_dataset_info(file: h5py.File, output_file: tp.Union[None, h5py.File], mo
     Args:
         file (h5py.File): The input dataset file
         output_file (h5py.File): The output dataset file
-        model_keys (_type_): all model keys of interist
+        model_keys (_type_): all model keys of interest
         image_keys (_type_): all image keys of interest
         key_0 (str, optional): This is the key of the first demo to check if already embedded. Defaults to "demo_1".
 
@@ -90,7 +90,7 @@ def get_all_datasets_info(datasets_paths, model_keys, img_keys ):
     dataset_info = {}
     # Populate the dataset_info
     for dataset_path in datasets_paths:
-        # prepare in and ouput paths
+        # prepare in and output paths
         original_file_path, dataset_out_file_path =  get_input_and_output_file_path(dataset_path)
 
         is_file = os.path.isfile(dataset_out_file_path)
