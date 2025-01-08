@@ -6,3 +6,4 @@ transformers
 opencv-python
 h5py
 numba
+scipy

@@ -1,3 +1,4 @@
+import re
 import time
 from concurrent.futures import ThreadPoolExecutor
 import os
@@ -14,10 +15,15 @@ class HDF5FileStructure:
     """
     Represents the structure of an HDF5 file.
     """
-    demo_group: tp.Union[str, None] = None # The keys to get to the group of demo data i.e "data/demos" that you can iterate over
-    obs_image_groups: tp.List[str] = None # The keys to get to the group of observation images i.e "obs/left_camera_1" from inside a demo group
-    obs_action_group: str = None # The key to get to the group of action data i.e "actions" from inside a demo group
+    demo_group: tp.Union[str, None] = None # The keys to get to the  demo data i.e "data/demos" that you can iterate over
+    obs_image_groups: tp.List[str] = None # The keys to get to the observation images i.e "obs/left_camera_1" from inside a demo group
+    obs_action_group: str = None # The key to get to the  action data i.e "actions" from inside a demo group
+    obs_eef_pos_group: str = None # This is the key to get to the eef pose from inside a demo group for auto slicing
 
+def get_demo_grp(hdf5_file: h5py.File, demo_group_key: tp.Union[str, None]):
+    if demo_group_key is None:
+        return hdf5_file
+    return hdf5_file[demo_group_key]
 
 @dataclass
 class DatasetConfig:
@@ -27,9 +33,11 @@ class DatasetConfig:
     name: str = None    # The name of the dataset
     absolute_dataset_folder: str  = None      # The absolute path to the folder containing the entire dataset
     file_structure: HDF5FileStructure = None    # Structure to access data
-    file_paths: str = "*.hdf5"  # The regex path of the files to include in the dataset folder
+    ds_match_regex: str = "*.hdf5"  # The regex path of the files to include in the dataset folder
     get_language_instruction: tp.Callable[[h5py.File, str], str] = None  # A function to get the language instruction from a passed hdf5 file and demo key
+    save_trajectory_match: tp.Callable = None
     # optional arguments
+
     embedding_extension: str = "embeds.hdf5" # The file ending of the embedded data
     exclude_path: tp.List[str] = field(default_factory=list) # Paths to exclude in dataset folder. Excluded if these strings in any part of the path
     
@@ -37,7 +45,7 @@ class DatasetConfig:
     
     def __post_init__(self):
         dataset_directory = Path(self.absolute_dataset_folder)
-        dataset_paths = list(dataset_directory.rglob(self.file_paths))
+        dataset_paths = list(dataset_directory.rglob(self.ds_match_regex))
         self.dataset_paths = []
         
         for path in dataset_paths:
@@ -50,6 +58,21 @@ class DatasetConfig:
         # replace the part after the last . with the embedding extension
         self.embedding_paths = [str(path).rsplit(".", 1)[0] + "_" + self.embedding_extension for path in self.dataset_paths]
 
+    def filter_(self, regex_to_match: tp.List[str]):
+        """
+        This method removes all the paths that do not contain any of the regexes in regex_to_match in place.
+        :param regex_to_match: The list of regexes to match. Only one of the regexes needs to match for it to be included
+        """
+        for i in range(len(self.dataset_paths) - 1, -1, -1):  # Iterate backward
+            if not any(re.match(regex, self.dataset_paths[i]) for regex in regex_to_match):
+                del self.dataset_paths[i]
+                del self.embedding_paths[i]
+
+    def __len__(self):
+        """
+        :return: How many dataset files are in this dataset
+        """
+        return len(self.dataset_paths)
 
 #####################################################
 # Code to help with embedding data  in parallel     #

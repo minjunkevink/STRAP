@@ -5,6 +5,13 @@ from torch.utils.data import Dataset
 from tqdm.auto import tqdm
 import typing as tp
 
+T = tp.TypeVar("T")
+def flatten_2d_array(arr_2d: tp.List[tp.List[T]]) -> tp.List[T]:
+    flattened = []
+    for sublist in arr_2d:
+        flattened.extend(sublist)
+    return flattened
+
 def resize_batch(imgs, img_size):
     resized_imgs = []
     for img in imgs:

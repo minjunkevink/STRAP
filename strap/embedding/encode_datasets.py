@@ -36,7 +36,7 @@ def get_datasets():
     You can use this with your own custom datasets as well.
     """
     from strap.configs.libero_hdf5_config import LIBERO_CONFIG, LIBERO_90_CONFIG, LIBERO_10_CONFIG
-    return [LIBERO_10_CONFIG]
+    return [LIBERO_90_CONFIG]
 
 def embed_datasets():
     datasets = get_datasets()

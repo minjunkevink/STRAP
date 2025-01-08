@@ -22,7 +22,7 @@ def embed_dataset(dataset: DatasetConfig, encoders: tp.List[BaseEncoder], saver_
 
     # create the dataset saver
     saver = DatasetSaver(num_threads=saver_threads, verbose=verbose)
-    for i in tqdm(range(len(dataset.dataset_paths)), desc=f"Embedding datasets", disable=(not verbose)):
+    for i in tqdm(range(len(dataset)), desc=f"Embedding datasets", disable=(not verbose)):
         # prepare in and output paths
         df_path, df_save_path = dataset.dataset_paths[i], dataset.embedding_paths[i]
         
@@ -71,7 +71,7 @@ def get_all_datasets_info(dataset: DatasetConfig, encoders: tp.List[BaseEncoder]
         
 
     # Populate the dataset_info
-    for i in range(len(dataset.dataset_paths)):
+    for i in range(len(dataset)):
         # prepare in and output paths
         df_path, df_save_path = dataset.dataset_paths[i], dataset.embedding_paths[i]
         is_file = os.path.isfile(df_save_path)
