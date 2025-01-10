@@ -107,5 +107,8 @@ The parameters are:
 - `verbose`: Whether to print verbose logging statements.
 - `retrieval_seed`: The seed to use for retrieval. Defaults to 42.
 
-## Retrieval Results
-The result hdf5 file will be saved to the path specified in the `output_path` argument. It will contain the information saved by your `save_trajectory_result` function. It also will contain the metadata at the root level of the file from the `task_dataset` 
+## Citation:
+If you find the following code helpful, please cite our work with:
+```aiignore
+@citation
+```
