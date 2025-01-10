@@ -1,0 +1,13 @@
+{
+    "task_dataset_path": "data/LIBERO/libero_10",
+    "offline_dataset_path": "data/LIBERO/libero_90",
+    "output_path": "data/retrieval/testing.hdf5",
+    "model_key": "model_v1",
+    "image_keys": ["agentview_rgb"],
+    "num_demos": 5,
+    "frame_stack": 3,
+    "seq_length": 10,
+    "task_dataset_filter": ["filterA", "filterB"],
+    "offline_dataset_filter": null,
+    "retrieval_seed": 42
+}

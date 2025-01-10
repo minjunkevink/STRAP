@@ -13,7 +13,7 @@ def embed_dataset(dataset: DatasetConfig, encoders: tp.List[BaseEncoder], saver_
     
     Args:
         dataset (DatasetConfig): The dataset to embed
-        encoders (List[BaseEncoder]): The encoders to use
+        encoders (List[BaseEncoder]): The encoders to use       
         verbose (bool, optional): Whether to print verbose output. Defaults to False.
     """
     # create a map of file path to work needed to be

@@ -44,7 +44,7 @@ def embed_datasets():
     
     saver_threads = 1
     
-    flip_images = False # Libero has upside down images
+    flip_images = True # Libero has upside down images
     batch_size = 1024
     image_size = (224,224)
     print("\033[94m" + f"Flip imgs is {flip_images}" + "\033[0m")

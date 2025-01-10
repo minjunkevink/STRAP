@@ -4,7 +4,7 @@ from itertools import accumulate
 
 import h5py
 from tqdm.auto import tqdm
-
+import numpy as np
 from strap.utils.file_utils import get_demo_grp
 from strap.utils.processing_utils import flatten_2d_array
 from strap.utils.retrieval_utils import RetrievalArgs, load_embeddings_into_memory, \
@@ -28,13 +28,25 @@ def process_matches(args: RetrievalArgs, nested_match_list: tp.List[tp.List[Traj
     return nested_match_list
 
 
-def run_retrieval(args: RetrievalArgs):
-    # load the task trajectory embeddings in to memory.
+def run_retrieval(args: RetrievalArgs) -> tp.Tuple[tp.List[TrajectoryMatchResult], tp.List[tp.List[TrajectoryMatchResult]]]:
+    """
+    Run retrieval to find matching trajectory segments from an offline dataset.
+
+    Args:
+        args (RetrievalArgs): Arguments specifying the retrieval configuration, including:
+    Returns:
+        tuple:
+            - List[TrajectoryMatchResult]: Original full trajectories from task dataset
+            - List[List[TrajectoryMatchResult]]: Nested list of retrieved trajectory segments,
+              where outer list corresponds to subtask task trajectories and inner lists contain
+              the top-k matching segments for that trajectory.
+    """
     task_embeddings: tp.List[TrajectoryEmbedding] = load_embeddings_into_memory(args)
+    original_demo_trajectories = [TrajectoryMatchResult(start=0, end=len(task_embedding), cost=0, file_path=task_embedding.file_path, file_traj_key=task_embedding.file_traj_key) for task_embedding in task_embeddings]
     task_embeddings = slice_embeddings(args, task_embeddings)
     nested_match_list = get_all_matches(args, task_embeddings)
     nested_match_list = process_matches(args, nested_match_list)
-    return nested_match_list
+    return original_demo_trajectories, nested_match_list
 
 def slice_embeddings(args: RetrievalArgs, task_embeddings: tp.List[TrajectoryEmbedding]):
     new_task_embeddings = []
@@ -110,30 +122,45 @@ def get_single_match(sub_traj_embedding: TrajectoryEmbedding, off_traj_embd: Tra
     end = end + 1
     return TrajectoryMatchResult(start=start, end=end, cost=cost, file_path=off_traj_embd.file_path, file_traj_key=off_traj_embd.file_traj_key)
 
-def save_results(args: RetrievalArgs, nested_match_list: tp.List[tp.List[TrajectoryMatchResult]]) -> None:
+def save_results(args: RetrievalArgs, full_task_trajectory_results: tp.List[TrajectoryMatchResult], nested_match_list: tp.List[tp.List[TrajectoryMatchResult]]) -> None:
     if os.path.isfile(args.output_path):
         print(f"Output file already exists, overwriting...")
     # make the output location if it doesn't exist
     if not os.path.exists(os.path.dirname(args.output_path)):
         os.makedirs(os.path.dirname(args.output_path))
 
-    with (h5py.File(args.output_path, "w") as f):
+    with h5py.File(args.output_path, "w") as f:
+        args.task_dataset.initalize_save_file_metadata(f, args.task_dataset)
+
         if args.task_dataset.file_structure.demo_group is not None:
-            demo_grp = f.create_group(args.task_dataset.file_structure.demo_group)
+            if args.task_dataset.file_structure.demo_group not in f:
+                demo_grp = f.create_group(args.task_dataset.file_structure.demo_group)
+            else:
+                demo_grp = f[args.task_dataset.file_structure.demo_group]
         else:
             demo_grp = f
-
-        # Copy over attributes of task dataset
-        with h5py.File(args.task_dataset.dataset_paths[0], "r", swmr=True) as task_dataset_file:
-            for k in task_dataset_file.attrs.keys():
-                f.attrs[k] = task_dataset_file.attrs[k]
 
         nested_match_list = flatten_2d_array(nested_match_list)
 
         cur_idx = 0
+        retrieved_keys = []
+        gt_keys = []
         for match in tqdm(nested_match_list):
             demo_key = f"demo_{cur_idx}"
             # save_grp = demo_grp.create_group(demo_key)
             with h5py.File(match.file_path, "r", swmr=True) as data_file:
                 args.offline_dataset.save_trajectory_match(data_grp=data_file, out_grp=demo_grp, result=match, args=args, dataset_config=args.task_dataset, new_demo_key=demo_key)
             cur_idx += 1
+            retrieved_keys.append(demo_key)
+        for full_trajectory_result in full_task_trajectory_results:
+            demo_key = f"demo_{cur_idx}"
+            gt_keys.append(demo_key)
+            cur_idx += 1
+            with h5py.File(full_trajectory_result.file_path, "r", swmr=True) as data_file:
+                args.offline_dataset.save_trajectory_match(data_grp=data_file, out_grp=demo_grp, result=full_trajectory_result, args=args, dataset_config=args.task_dataset, new_demo_key=demo_key)
+            
+        # create the masks
+        mask_grp = f.create_group("mask")
+        mask_grp.create_dataset("demos", data=np.array(retrieved_keys, dtype="S"))
+        mask_grp.create_dataset("all", data=np.array(retrieved_keys + gt_keys, dtype="S"))
+        mask_grp.create_dataset("retrieved", data=np.array(retrieved_keys, dtype="S"))

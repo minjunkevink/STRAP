@@ -81,7 +81,7 @@ class CLIP(BaseEncoder):
         self.mm_vision_select_layer = mm_vision_select_layer
         self.device = device
         
-        self.embedding_file_key = f"{model_class.replace('/', '_')}_{pooling}_{token_idx}_{mm_vision_select_layer}"
+        self.embedding_file_key = "CLIP"#f"{model_class.replace('/', '_')}_{pooling}_{token_idx}_{mm_vision_select_layer}"
         super().__init__()
         
 
@@ -130,7 +130,7 @@ class DINOv2(BaseEncoder):
         self.token_idx = token_idx
         self.device = device
         
-        self.embedding_file_key = f"{model_class.replace('/', '_')}_{pooling}_{token_idx}"
+        self.embedding_file_key = "DINOv2"#f"{model_class.replace('/', '_')}_{pooling}_{token_idx}"
         super().__init__()
 
     def preprocess(self, imgs, actions=None):

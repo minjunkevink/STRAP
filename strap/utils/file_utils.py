@@ -7,8 +7,7 @@ import threading
 import typing as tp
 from pathlib import Path
 import h5py
-import numpy as np 
-
+import numpy as np
 
 @dataclass
 class HDF5FileStructure:
@@ -35,7 +34,8 @@ class DatasetConfig:
     file_structure: HDF5FileStructure = None    # Structure to access data
     ds_match_regex: str = "*.hdf5"  # The regex path of the files to include in the dataset folder
     get_language_instruction: tp.Callable[[h5py.File, str], str] = None  # A function to get the language instruction from a passed hdf5 file and demo key
-    save_trajectory_match: tp.Callable = None
+    save_trajectory_match: tp.Callable = None # Function to save a single trajectory to the output file
+    initalize_save_file_metadata: tp.Callable = None # Function to initialize the output file metadata
     # optional arguments
 
     embedding_extension: str = "embeds.hdf5" # The file ending of the embedded data

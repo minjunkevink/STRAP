@@ -8,6 +8,16 @@ import numpy as np
 def get_libero_lang_instruction(f: h5py.File, demo_key) -> str:
     return json.loads(f["data"].attrs["problem_info"]).get("language_instruction", "dummy")
 
+def initialize_libero_dataset(f: h5py.File, dataset_config: DatasetConfig):
+    """
+    Called with a blank hdf 5 file f to initialize meta attributes. the dataset config is of the task
+    dataset.
+    """
+    with h5py.File(dataset_config.dataset_paths[0], "r", swmr=True) as task_dataset_file:
+        f.create_group("data")
+
+        for k in task_dataset_file["data"].attrs.keys():
+            f["data"].attrs[k] = task_dataset_file["data"].attrs[k]
 
 def save_trajectory_result_libero(data_grp: h5py.File, out_grp: h5py.File, result: TrajectoryMatchResult, args: RetrievalArgs, dataset_config: DatasetConfig, new_demo_key: str):
     language_instruction = get_libero_lang_instruction(data_grp, result.file_traj_key)
