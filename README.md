@@ -68,6 +68,7 @@ The second step is to define a `DatasetConfig` object. This represents a dataset
 - `exclude_path`: An optionallist of regexes to exclude from the dataset.
 - `get_language_instruction`: Helper function to get the language instructions from the dataset.
 - `save_trajectory_match`:  Helper function to save the retrieved trajectories to the output dataset.
+- `initalize_save_file_metadata`: Helper function to copy over the metadata from the task dataset to the output dataset.
 
 We have defined this for the LIBERO dataset in `strap/configs/libero_hdf5_config.py`.
 
@@ -77,6 +78,7 @@ The `DatasetConfig` object also contains two helper functions you can define to 
 
 - `get_language_instruction`: A function that takes a h5py file in your dataset, and a demo_key and returns the language instruction for that demo. For example, in LIBERO this extracts the task name from the demo metadata.
 - `save_trajectory_result`: A function that takes the a h5py file input, a new h5py file as output, a `TrajectoryMatchResult`, the args passed for retrieval, the `DatasetConfig` of the input dataset, and the demo key to save the result under in the new file. This function must then handle copying over the relevant data from the TrajectoryMatchResult into the new retrieved dataset. We chose to define this as a configurable function in order to allow for different file structures for different datasets.
+- `initalize_save_file_metadata`: A function that takes the a h5py file input and the `DatasetConfig` of the input dataset. This function must then handle copying over the relevant metadata from the input dataset to the output dataset, and initalizing the file.
 
 ## Configuring Embedding
 We have defined the CLIP and DINOv2 encoders in `strap/embedding/encoders.py`. You can define your own encoders by inheriting from the `BaseEncoder` class and overwriting the `encode` and `preprocess` methods. 
