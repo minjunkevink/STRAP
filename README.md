@@ -63,16 +63,13 @@ Finally run `retrieval.py` to retrieve sub-trajectories from the offline dataset
 ```bash
 python strap/retrieval/retrieval.py
 ```
-SHORTEN ABOVE
 
 The retrieval dataset `put_both_moka_pots_retrieved_dataset.hdf5` is saved in the `data/retrieval_results` folder! You can now use this dataset to train a policy using our 
 [policy learning code](test).
 
 ## Retrieve from custom datasets
-We designed STRAP to be modular and deal with any dataset roughly following [hdf5 structure](https://robomimic.github.io/docs/datasets/overview.html#dataset-structure) of robomimic.
-
+We designed STRAP to be modular and deal with any dataset roughly following the [hdf5 structure](https://robomimic.github.io/docs/datasets/overview.html#dataset-structure) of robomimic.
 The embedding code doesn't modify the original dataset and the retrieval algorithm writes a single hdf5 file containing the retrieved sub-trajectories.
-
 To retrieve from a custom dataset, follow these steps:
 
 
