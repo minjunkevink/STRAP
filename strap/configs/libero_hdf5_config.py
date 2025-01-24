@@ -9,7 +9,7 @@ from strap.configs.libero_file_functions import get_libero_lang_instruction, sav
 
 LIBERO_FILE_STRUCTURE = HDF5FileStructure(
         demo_group="data",
-        obs_image_groups=["obs/agentview_rgb", "obs/eye_in_hand_rgb"],
+        obs_image_groups=["obs/agentview_rgb"], # ["obs/agentview_rgb", "obs/eye_in_hand_rgb"]
         obs_action_group="actions",
         obs_eef_pos_group="obs/ee_pos",
 )

@@ -5,14 +5,17 @@ from tqdm import tqdm
 
 
 class BaseEncoder(ABC):
-    # NOTE: You must override this. It cannot contain / characters
-    embedding_file_key = None # The key to use to save the embeddings in the hdf5 embedding file 
-    
-    
+    # Key to save the embeddings in the hdf5 embedding file
+    embedding_file_key = None
+
     def __init__(self):
-        assert self.embedding_file_key is not None, "You must override the embedding_file_key in the encoder class"
-        assert "/" not in self.embedding_file_key, "The embedding_file_key cannot contain / characters"
-    
+        assert (
+            self.embedding_file_key is not None
+        ), "You must override the embedding_file_key in the encoder class"
+        assert (
+            "/" not in self.embedding_file_key
+        ), "The embedding_file_key cannot contain / characters"
+
     @abstractmethod
     def preprocess(self, imgs, actions):
         """
@@ -49,9 +52,7 @@ class BaseEncoder(ABC):
         """
         features = []
         with torch.no_grad():
-            for imgs, actions, language in tqdm(
-                    dataloader, desc="Extracting features", disable=(not verbose)
-            ):
+            for imgs, actions, language in dataloader:
                 inputs = self.preprocess(imgs, actions)
                 outputs = self.encode(inputs)
                 features.append(outputs.cpu())
@@ -61,14 +62,15 @@ class BaseEncoder(ABC):
 class CLIP(BaseEncoder):
 
     def __init__(
-            self,
-            model_class="openai/clip-vit-base-patch16",
-            pooling=None,  # [None | "avg" | "max"]
-            token_idx=None,  # [None, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-            mm_vision_select_layer=-2,
-            device="cuda",
+        self,
+        model_class="openai/clip-vit-base-patch16",
+        pooling=None,  # [None | "avg" | "max"]
+        token_idx=None,  # [None, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+        mm_vision_select_layer=-2,
+        device="cuda",
     ):
 
+        # init model
         from transformers import CLIPVisionModel, AutoProcessor
 
         self.model = CLIPVisionModel.from_pretrained(model_class)
@@ -76,14 +78,14 @@ class CLIP(BaseEncoder):
         self.model.to(device)
         self.processor = AutoProcessor.from_pretrained(model_class)
 
+        # model args
+        self.embedding_file_key = "CLIP"
         self.pooling = pooling
         self.token_idx = token_idx
         self.mm_vision_select_layer = mm_vision_select_layer
         self.device = device
-        
-        self.embedding_file_key = "CLIP"#f"{model_class.replace('/', '_')}_{pooling}_{token_idx}_{mm_vision_select_layer}"
+
         super().__init__()
-        
 
     def preprocess(self, imgs, actions=None):
 
@@ -91,9 +93,9 @@ class CLIP(BaseEncoder):
 
         return inputs["pixel_values"].to(self.device)
 
-    def encode(self, imgs):
+    def encode(self, postprocessed_imgs):
 
-        outputs = self.model(pixel_values=imgs, output_hidden_states=True)
+        outputs = self.model(pixel_values=postprocessed_imgs, output_hidden_states=True)
 
         features = outputs.hidden_states[self.mm_vision_select_layer]
 
@@ -112,13 +114,14 @@ class CLIP(BaseEncoder):
 class DINOv2(BaseEncoder):
 
     def __init__(
-            self,
-            model_class="facebook/dinov2-base",
-            pooling=None,  # [None | "avg" | "max"]
-            token_idx=None,  # [None, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-            device="cuda",
+        self,
+        model_class="facebook/dinov2-base",
+        pooling=None,  # [None | "avg" | "max"]
+        token_idx=None,  # [None, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+        device="cuda",
     ):
 
+        # init model
         from transformers import Dinov2Model, AutoImageProcessor
 
         self.model = Dinov2Model.from_pretrained(model_class)
@@ -126,11 +129,12 @@ class DINOv2(BaseEncoder):
         self.model.to(device)
         self.processor = AutoImageProcessor.from_pretrained(model_class)
 
+        # model args
+        self.embedding_file_key = "DINOv2"
         self.pooling = pooling
         self.token_idx = token_idx
         self.device = device
-        
-        self.embedding_file_key = "DINOv2"#f"{model_class.replace('/', '_')}_{pooling}_{token_idx}"
+
         super().__init__()
 
     def preprocess(self, imgs, actions=None):
@@ -139,9 +143,9 @@ class DINOv2(BaseEncoder):
 
         return inputs["pixel_values"].to(self.device)
 
-    def encode(self, imgs):
+    def encode(self, postprocessed_imgs):
 
-        outputs = self.model(pixel_values=imgs, output_hidden_states=True)
+        outputs = self.model(pixel_values=postprocessed_imgs, output_hidden_states=True)
 
         features = outputs.last_hidden_state
 
@@ -157,6 +161,3 @@ class DINOv2(BaseEncoder):
             features = features[:, self.token_idx]
 
         return features
-
-
-# Feel free to add more encoders here

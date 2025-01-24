@@ -25,6 +25,7 @@ This is the repository for the paper STRAP
 ## How to install
 To install, run the following commands:
 ```bash
+conda create -n strap python=3.9
 git clone https://github.com/WEIRDLabUW/STRAP.git
 cd STRAP/strap
 pip install -e .

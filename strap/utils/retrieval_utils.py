@@ -8,24 +8,26 @@ import numpy as np
 
 from utils.file_utils import DatasetConfig, get_demo_grp
 
+
 @dataclass
 class RetrievalArgs:
     """
-    - `task_dataset`: The `DatasetConfig` of the task dataset to use as the retrieval query.
-    - `offline_dataset`: The `DatasetConfig` of the dataset you want to retrieve from.
-    - `output_path`: The path to the output file.
-    - `model_key`: The key of the encoder to use for retrieval.
-    - `image_keys`: The keys of the images to use for retrieval. If it is multiple images, it will average the embeddings.
-    - `num_demos`: The number of demos to sample from the task dataset.
-    - `frame_stack`: How much to pad the sequence start by for models with frame stacks. In our libero experiments, we set this to 5, and then disable the robomimic padding.
-    - `action_chunk`: How much to pad the sequence end by for models with action chunking. In our libero experiments, we set this to 5.
-    - `top_k`: How many segments to retrieve.
-    - `task_dataset_filter`: A regex pattern or list of patterns to filter the demos in the task dataset.
-    - `offline_dataset_filter`: A regex pattern or list of patterns to filter the demos in the offline dataset.
-    - `min_subtraj_len`: The minimum length of a subtrajectory to create during slicing.
-    - `verbose`: Whether to print verbose logging statements.
-    - `retrieval_seed`: The seed to use for retrieval. Defaults to 42.
+    task_dataset: The `DatasetConfig` of the task dataset to use as the retrieval query.
+    offline_dataset: The `DatasetConfig` of the dataset you want to retrieve from.
+    output_path: The path to the output file.
+    model_key: The key of the encoder to use for retrieval.
+    image_keys: The keys of the images to use for retrieval. If it is multiple images, it will average the embeddings.
+    num_demos: The number of demos to sample from the task dataset.
+    frame_stack: How much to pad the sequence start by for models with frame stacks. In our libero experiments, we set this to 5, and then disable the robomimic padding.
+    action_chunk: How much to pad the sequence end by for models with action chunking. In our libero experiments, we set this to 5.
+    top_k: How many segments to retrieve.
+    task_dataset_filter: A regex pattern or list of patterns to filter the demos in the task dataset.
+    offline_dataset_filter: A regex pattern or list of patterns to filter the demos in the offline dataset.
+    min_subtraj_len: The minimum length of a subtrajectory to create during slicing.
+    verbose: Whether to print verbose logging statements.
+    retrieval_seed: The seed to use for retrieval. Defaults to 42.
     """
+
     task_dataset: DatasetConfig
     offline_dataset: DatasetConfig
     output_path: str
@@ -35,8 +37,8 @@ class RetrievalArgs:
     frame_stack: int
     action_chunk: int
     top_k: int
-    task_dataset_filter: tp.Union[tp.List[str], str, None]=None
-    offline_dataset_filter: tp.Union[tp.List[str], str, None]=None
+    task_dataset_filter: tp.Union[tp.List[str], str, None] = None
+    offline_dataset_filter: tp.Union[tp.List[str], str, None] = None
     min_subtraj_len: int = 20
     verbose: bool = True
     retrieval_seed: int = 42
@@ -57,6 +59,7 @@ class RetrievalArgs:
                 self.offline_dataset_filter = [self.offline_dataset_filter]
             self.offline_dataset.filter_(self.offline_dataset_filter)
 
+
 @dataclass
 class TrajectoryEmbedding:
     embedding: np.ndarray
@@ -70,11 +73,9 @@ class TrajectoryEmbedding:
         return len(self.embedding)
 
 
-
 @dataclass
 class RetrievalResult:
     matches: tp.Any
-
 
 
 def load_embeddings_into_memory(args: RetrievalArgs) -> tp.List[TrajectoryEmbedding]:
@@ -84,13 +85,27 @@ def load_embeddings_into_memory(args: RetrievalArgs) -> tp.List[TrajectoryEmbedd
         file_path = args.task_dataset.dataset_paths[i]
         with h5py.File(file_path, "r", swmr=True) as data_file:
             with h5py.File(embedding_file_path, "r", swmr=True) as embedding_file:
-                data_grp = get_demo_grp(data_file, args.task_dataset.file_structure.demo_group)
-                grp = get_demo_grp(embedding_file, args.task_dataset.file_structure.demo_group)
+                data_grp = get_demo_grp(
+                    data_file, args.task_dataset.file_structure.demo_group
+                )
+                grp = get_demo_grp(
+                    embedding_file, args.task_dataset.file_structure.demo_group
+                )
                 for traj_key in grp.keys():
-                    embedding = np.stack([grp[traj_key][args.model_key][image_key] for image_key in args.image_keys], axis=1)
+                    embedding = np.stack(
+                        [
+                            grp[traj_key][args.model_key][image_key]
+                            for image_key in args.image_keys
+                        ],
+                        axis=1,
+                    )
                     embedding = np.mean(embedding, axis=1)
-                    file_traj_key = traj_key # if args.task_dataset.file_structure.demo_group is None else f"{args.task_dataset.file_structure.demo_group}/{traj_key}"
-                    eef_poses = np.array(data_grp[traj_key][args.task_dataset.file_structure.obs_eef_pos_group])
+                    file_traj_key = traj_key  # if args.task_dataset.file_structure.demo_group is None else f"{args.task_dataset.file_structure.demo_group}/{traj_key}"
+                    eef_poses = np.array(
+                        data_grp[traj_key][
+                            args.task_dataset.file_structure.obs_eef_pos_group
+                        ]
+                    )
                     results.append(
                         TrajectoryEmbedding(
                             embedding=embedding,
@@ -98,7 +113,7 @@ def load_embeddings_into_memory(args: RetrievalArgs) -> tp.List[TrajectoryEmbedd
                             file_path=file_path,
                             file_traj_key=file_traj_key,
                             file_model_key=args.model_key,
-                            file_img_keys=args.image_keys
+                            file_img_keys=args.image_keys,
                         )
                     )
     if args.num_demos > 0:
@@ -107,8 +122,16 @@ def load_embeddings_into_memory(args: RetrievalArgs) -> tp.List[TrajectoryEmbedd
     return results
 
 
-def load_single_embedding_into_memory(args: RetrievalArgs, demo_grp: h5py.File, traj_key, file_path):
-    embedding = np.stack([demo_grp[traj_key][args.model_key][image_key] for image_key in args.image_keys], axis=1)
+def load_single_embedding_into_memory(
+    args: RetrievalArgs, demo_grp: h5py.File, traj_key, file_path
+):
+    embedding = np.stack(
+        [
+            demo_grp[traj_key][args.model_key][image_key]
+            for image_key in args.image_keys
+        ],
+        axis=1,
+    )
     embedding = np.mean(embedding, axis=1)
 
     result = TrajectoryEmbedding(
@@ -117,7 +140,7 @@ def load_single_embedding_into_memory(args: RetrievalArgs, demo_grp: h5py.File, 
         file_path=file_path,
         file_traj_key=traj_key,
         file_model_key=args.model_key,
-        file_img_keys=args.image_keys
+        file_img_keys=args.image_keys,
     )
     return result
 
@@ -136,7 +159,7 @@ def segment_trajectory_by_derivative(states, threshold=2.5e-3):
 
     # Segment the trajectory at each stop point
     for stop in stops:
-        sub_trajectories.append(states[start_idx:stop + 1])  # Add the segment
+        sub_trajectories.append(states[start_idx : stop + 1])  # Add the segment
         start_idx = stop + 1  # Update start index
 
     # Append the last remaining segment
@@ -155,7 +178,9 @@ def merge_short_segments(segments, min_length=5):
         if len(current_segment) < min_length:
             current_segment = np.vstack((current_segment, segments[i]))
         else:
-            merged_segments.append(current_segment)  # Save the segment if it's long enough
+            merged_segments.append(
+                current_segment
+            )  # Save the segment if it's long enough
             current_segment = segments[i]  # Start a new segment
 
         prev_segment = current_segment
@@ -168,10 +193,10 @@ def merge_short_segments(segments, min_length=5):
 
     return merged_segments
 
+
 """
 Code referenced and borrowed from https://www.audiolabs-erlangen.de/resources/MIR/FMP/C7/C7S2_SubsequenceDTW.html
 """
-
 
 
 @dataclass
@@ -181,7 +206,6 @@ class TrajectoryMatchResult:
     cost: int
     file_path: str
     file_traj_key: str
-
 
     def __ge__(self, other):
         return self.cost >= other.cost
@@ -220,8 +244,8 @@ def get_distance_matrix(sub_trajectory, dataset_trajectory):
     Returns:
     This returns the Euclidean distance matrix.
     """
-    sub_squared = np.sum(sub_trajectory ** 2, axis=1)[:, np.newaxis]
-    dataset_squared = np.sum(dataset_trajectory ** 2, axis=1)[:, np.newaxis]
+    sub_squared = np.sum(sub_trajectory**2, axis=1)[:, np.newaxis]
+    dataset_squared = np.sum(dataset_trajectory**2, axis=1)[:, np.newaxis]
 
     cross_term = np.dot(sub_trajectory, dataset_trajectory.T)
     # since ||a - b||^2 = ||a||^2 + ||b||^2 - 2 * a * b
@@ -250,7 +274,9 @@ def compute_accumulated_cost_matrix_subsequence_dtw_21(C):
         for m in range(0, M):
             if n == 0 and m == 0:
                 continue
-            D[n + 1, m + 2] = C[n, m] + min(D[n - 1 + 1, m - 1 + 2], D[n - 1 + 1, m - 2 + 2])  # D[n-2+1, m-1+2],
+            D[n + 1, m + 2] = C[n, m] + min(
+                D[n - 1 + 1, m - 1 + 2], D[n - 1 + 1, m - 2 + 2]
+            )  # D[n-2+1, m-1+2],
     D = D[1:, 2:]
     return D
 
