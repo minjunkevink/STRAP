@@ -21,6 +21,7 @@ def get_encoders():
     Returns:
         List[Encoder]: List of encoders to use for embedding
     """
+    # NOTE: define the encoders you want to use here
     models = [
         DINOv2(model_class="facebook/dinov2-base", pooling="avg"),
         # CLIP(model_class="openai/clip-vit-base-patch16", pooling="avg", mm_vision_select_layer=-2),
@@ -37,8 +38,9 @@ def get_datasets():
     Returns:
         List[DatasetConfig]: List of datasets to embed
     """
-
-    return [LIBERO_90_CONFIG, LIBERO_10_CONFIG]
+    # NOTE: define the datasets you want to embed here
+    datasets = [LIBERO_90_CONFIG, LIBERO_10_CONFIG]
+    return datasets
 
 
 def embed_datasets():
@@ -49,7 +51,9 @@ def embed_datasets():
     datasets = get_datasets()
     encoders = get_encoders()
 
-    flip_images = True  # Libero has upside down images
+    # NOTE: define the settings you want to use here
+    # LIBERO's images are upside down, so flip them
+    flip_images = True
     print("\033[94m" + f"Flip imgs is {flip_images}" + "\033[0m")
 
     batch_size = 256

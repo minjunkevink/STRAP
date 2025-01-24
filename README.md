@@ -1,7 +1,115 @@
-# STRAP
+<p align="center">
+  <img width="30%" src="media/strap_logo.png"/>
+</p>
+<h1 align="center">Robot Sub-Trajectory Retrieval for Augmented Policy Learning</h1>
 
-This is the repository for the paper STRAP
+<p align="center"> 
+  <a href="https://memmelma.github.io">Marius Memmel</a><sup>*</sup>, 
+  <a href="https://www.linkedin.com/in/jacob-b-066234203/">Jacob Berg</a><sup>*</sup>, 
+  <a href="https://scholar.google.com/citations?user=LYt_2MgAAAAJ&amp;hl=en">Bingqing Chen</a>, 
+  <a href="https://abhishekunique.github.io/">Abhishek Gupta</a><sup>†</sup>, 
+  <a href="https://scholar.google.com/citations?user=7CLS0LwAAAAJ&amp;hl=en">Jonathan Francis</a><sup>†</sup> 
+</p>
 
+<p align="center">*equal contribution †equal advising</p>
+
+<p align="center">ICLR 2025</p>
+
+<p align="center">
+  <a href='https://openreview.net/pdf?id=EWfN9upi72'>paper</a> |
+  <a href='https://arxiv.org/abs/2412.15182'>arxiv</a> |
+  <a href='https://weirdlabuw.github.io/strap/'>website</a>
+
+</p>
+
+<p align="center"></p>
+
+<p align="center">
+  <img width="100%" src="media/teaser.gif"/>
+</p>
+<p align="center">STRAP is a retrieval robustifies few-shot imitation learning by encoding trajectories with vision foundation models and retrieving sub-trajectories with subsequence dynamic time warping.
+
+</p>
+<p align="center">This repository contains our implementation of the trajectory encoding and the retrieval algorithm.</p>
+
+## Setup
+1. Create the conda environment:
+    ```bash
+    conda create -n strap python=3.9
+    conda activate strap
+    ```
+2. Install the repository:
+    ```bash
+    git clone https://github.com/WEIRDLabUW/STRAP.git
+    cd STRAP/strap
+    pip install -e .
+    ```
+
+You're all set!
+
+Code tested with Python 3.9, PyTroch 2.0.1, transformers 4.46.4, and CUDA version 11.7
+
+## Replicate LIBERO results
+To replicate our results on the LIBERO datasets, first download the datasets using the `download_libero.py` script. 
+```bash
+python data/download_libero.py
+```
+Next, encode the datasets using `encode_datasets.py`. By default, the script encodes the `agentview_rgb` observations in LIBERO-10 and LIBERO-90 using DINOv2. This process can take up to multiple hours depending on your hardware!
+```bash
+python strap/embedding/encode_datasets.py
+```
+
+Finally run `retrieval.py` to retrieve sub-trajectories from the offline dataset. By default, the script selects 3 demos from the "put both moka pots on the stove" task in LIBERO-10 (prior dataset) and retrieves the top 100 sub-trajectories from LIBERO-90 (offline dataset). The sub-trajectories have a minimum length of 20 and are retrieved using the DINOv2 embeddings of `agentview_rgb`.
+```bash
+python strap/retrieval/retrieval.py
+```
+SHORTEN ABOVE
+
+The retrieval dataset `put_both_moka_pots_retrieved_dataset.hdf5` is saved in the `data/retrieval_results` folder! You can now use this dataset to train a policy using our 
+[policy learning code](test).
+
+## Retrieve from custom datasets
+We designed STRAP to be modular and deal with any dataset roughly following [hdf5 structure](https://robomimic.github.io/docs/datasets/overview.html#dataset-structure) of robomimic.
+
+The embedding code doesn't modify the original dataset and the retrieval algorithm writes a single hdf5 file containing the retrieved sub-trajectories.
+
+To retrieve from a custom dataset, follow these steps:
+
+
+1. Configure a new dataset
+
+    To add a new dataset, create a `HDF5FileStructure` and two `DatasetConfig`.
+    
+    - `HDF5FileStructure` defines the file structure for the new dataset, e.g., which image observations and proprioceptive information to use, file paths and endings, and data keys.
+    - `DatasetConfig` defines which files to load and helper functions to write the output dataset. You'll have to add two datasets (prior and offline).
+    
+    See [configs/libero_hdf5_config.py](strap/configs/libero_hdf5_config.py) for an example.
+
+    **Tipp:** If you're dataset follows the LIBERO format you can reuse the helper functions in [configs/libero_file_functions.py](strap/configs/libero_file_functions.py).
+
+    Configuration details: [here](strap/configs/README.md)
+
+2. Embed the datasets
+
+    Define encoders (`get_encoders`) and add the new dataset configs (`get_datasets`) in [embedding/encode_datasets.py](strap/embedding/encode_datasets.py).
+
+    Run the script to embed the dataset:
+    ```bash
+    python strap/embedding/encode_datasets.py
+    ```
+
+    Configuration details: [here](strap/embedding/README.md)
+
+3. Retrieve from the dataset
+
+    Define the retrieval arguments (`get_args`) in [retrieval/retrieval.py](strap/retrieval/retrieval.py).
+
+    Run the script to retrieve from the dataset:
+    ```bash
+    python strap/retrieval/retrieval.py
+    ```
+
+    Configuration details: [here](strap/retrieval/README.md)
 
 ## File Structure:
 ```bash
@@ -12,104 +120,22 @@ This is the repository for the paper STRAP
 │   │   ├── retrieval/
 │   │   │   ├── retrieval.py # Script to run retrieval on embeded datasets using the retrieval model
 │   │   ├── embedding/
-│   │   │   ├── encoders/ # Encoders for embedding
+│   │   │   ├── encoders/
 │   │   │   │   ├── encoders.py # Definitions of the different encoders
 │   │   │   │   ├── encode_datasets.py # Script to encode a dataset using an encoder for retrieval.
 │   │   │   ├── configs/
 │   │   │   │   ├── libero_configs.py # Configs for the libero datasets
 │   │   │   │   ├── libero_file_functions.py # File functions for the libero datasets
 │   │   ├── README.md
-│   ├── requirements.txt # Python requirements
+│   ├── requirements.txt
 ```
 
-## How to install
-To install, run the following commands:
-```bash
-conda create -n strap python=3.9
-git clone https://github.com/WEIRDLabUW/STRAP.git
-cd STRAP/strap
-pip install -e .
-```
-
-## How to use
-If you want to replicate our results on the LIBERO datasets, first download the datasets using the `download_libero.py` script. 
-```bash
-python data/download_libero.py
-```
-The next step is to encode the datasets using the `encode_datasets.py` script. Ours defaults to using both CLIP and DINOv2, and will embed both LIBERO_10 and LIBERO 90.
-```bash
-python strap/embedding/encode_datasets.py
-```
-
-Finally you are ready to run retrieval on the encoded datasets using the `retrieval.py` script. The default settings will select 3 demos from the LIBERO_10 "put both moka pots on the stove" task and retrieve the top 100 demos from the LIBERO_90 dataset. It has a minimum subtrajectory length of 20, and will use the DINOv2 agentview amera for retrieval.
-```bash
-python strap/retrieval/retrieval.py
-```
-
-You now have a retrieval dataset `put_both_moka_pots_retrieved_dataset.hdf5` in the `data/retrieval_results` folder! You can now use this dataset to train a policy using our 
-[STRAP policy learning code](test). 
-
-## Structure of the code
-We designed STRAP to be modular and work on any HDF5 dataset that you can make a dataset config for. 
-
-### Dataset Configs and HDF5 File Structure
-The first step to defining a dataset is to define the HDF5 file structure. This is done by defining a `HDF5FileStructure` object. This object is a dataclass that contains the following fields:
-- `demo_group`: The path from the root of the HDF5 file to the group containing all demonstrations. For example, if your demonstrations are stored under "/data/demos" in the HDF5 file, this would be "data/demos". Set to None if the demonstrations are stored directly at the root level.
-- `obs_image_groups`: A list of paths from a demo group to image data. For example, if your images are stored at "/data/demos/###/images/rgb1" and "/data/demos/###/images/rgb2", this would be ["images/rgb1", "images/rgb2"]. These images will be used for embedding and retrieval.
-- `obs_action_group`: The path from a demo group to action data. For example, if your actions are stored at "/data/demos/###/actions", this would be "actions".
-- `obs_eef_pos_group`: The path from a demo group to end-effector position data. For example, if your end-effector positions are stored at "/data/demos/###/obs/ee_pos", this would be "obs/ee_pos".
-
-
-The second step is to define a `DatasetConfig` object. This represents a dataset of multiple HDF5 files. This object is a dataclass that contains the following fields:
-- `name`: The name of the dataset.
-- `absolute_dataset_folder`: The path to the root folder containing all of the HDF5 files.
-- `file_structure`: The `HDF5FileStructure` object.
-- `ds_match_regex`: A regex pattern to match the HDF5 file paths in the dataset folder. Defaults to "*.hdf5".
-- `embedding_extension`: What to append on to each file to save the embeddings version as. Defaults to "embeds.hdf5".
-- `exclude_path`: An optional list of regexes to exclude from the dataset.
-- `get_language_instruction`: Helper function to get the language instructions from the dataset.
-- `save_trajectory_match`:  Helper function to save the retrieved trajectories to the output dataset.
-- `initalize_save_file_metadata`: Helper function to copy over the metadata from the task dataset to the output dataset.
-
-We have defined this for the LIBERO dataset in `strap/configs/libero_hdf5_config.py`.
-
-#### Config Helper Functions
-
-The `DatasetConfig` object also contains two helper functions you can define to use new datasets.
-
-- `get_language_instruction`: A function that takes a h5py file in your dataset, and a demo_key and returns the language instruction for that demo. For example, in LIBERO this extracts the task name from the demo metadata.
-- `save_trajectory_result`: A function that takes a h5py file input, a new h5py file as output, a `TrajectoryMatchResult`, the args passed for retrieval, the `DatasetConfig` of the input dataset, and the demo key to save the result under in the new file. This function must then handle copying over the relevant data from the TrajectoryMatchResult into the new retrieved dataset. We chose to define this as a configurable function in order to allow for different file structures for different datasets.
-- `initalize_save_file_metadata`: A function that takes a h5py file input and the `DatasetConfig` of the input dataset. This function must then handle copying over the relevant metadata from the input dataset to the output dataset, and initializing the file.
-
-## Configuring Embedding
-We have defined the CLIP and DINOv2 encoders in `strap/embedding/encoders.py`. You can define your own encoders by inheriting from the `BaseEncoder` class and overwriting the `encode` and `preprocess` methods. 
-
-To encode your datasets, use the `encode_datasets.py` script. This script will use the encoders you have defined in `get_encoders()` and the datasets you have defined in `get_datasets()`. Just change the dataset configs and the encoders list if you want to use different datasets or encoders. Set the `VERBOSE` flag to `False` to disable most of the logging statements. 
-
-We also have a parallelized version of the dataset saving process as we noticed a large bottleneck in the dataset saving process. You can enable this by setting the `saver_threads` argument in the `encode_dataset` function to the number of threads you want to use. You can also set the `image_size` of the crop, and the batch_size of the encoder, as well as if you want to flip the images. LIBERO has upside down images, so we set `flip_images=True` for the embeddings to improve performance.
-
-
-
-## Configuring Retrieval
-The retrieval process is defined by the config created in the get_args() function. 
-The parameters are:
-- `task_dataset`: The `DatasetConfig` of the task dataset to use as the retrieval query.
-- `offline_dataset`: The `DatasetConfig` of the dataset you want to retrieve from.
-- `output_path`: The path to the output file.
-- `model_key`: The key of the encoder to use for retrieval.
-- `image_keys`: The keys of the images to use for retrieval. If it is multiple images, it will average the embeddings.
-- `num_demos`: The number of demos to sample from the task dataset.
-- `frame_stack`: How much to pad the sequence start by for models with frame stacks. In our libero experiments, we set this to 5, and then disable the robomimic padding.
-- `action_chunk`: How much to pad the sequence end by for models with action chunking. In our libero experiments, we set this to 5.
-- `top_k`: How many segments to retrieve.
-- `task_dataset_filter`: A regex pattern or list of patterns to filter the demos in the task dataset.
-- `offline_dataset_filter`: A regex pattern or list of patterns to filter the demos in the offline dataset.
-- `min_subtraj_len`: The minimum length of a subtrajectory to create during slicing.
-- `verbose`: Whether to print verbose logging statements.
-- `retrieval_seed`: The seed to use for retrieval. Defaults to 42.
-
-## Citation:
-If you find the following code helpful, please cite our work with:
+## Citation
 ```aiignore
-@citation
+@article{memmel2024strap,
+  title={STRAP: Robot Sub-Trajectory Retrieval for Augmented Policy Learning},
+  author={Memmel, Marius and Berg, Jacob and Chen, Bingqing and Gupta, Abhishek and Francis, Jonathan},
+  journal={arXiv preprint arXiv:2412.15182},
+  year={2024}
+}
 ```
