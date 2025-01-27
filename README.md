@@ -5,7 +5,7 @@
 
 <p align="center"> 
   <a href="https://memmelma.github.io">Marius Memmel</a><sup>*</sup>, 
-  <a href="https://www.linkedin.com/in/jacob-b-066234203/">Jacob Berg</a><sup>*</sup>, 
+  <a href="https://jacob33.com">Jacob Berg</a><sup>*</sup>, 
   <a href="https://scholar.google.com/citations?user=LYt_2MgAAAAJ&amp;hl=en">Bingqing Chen</a>, 
   <a href="https://abhishekunique.github.io/">Abhishek Gupta</a><sup>†</sup>, 
   <a href="https://scholar.google.com/citations?user=7CLS0LwAAAAJ&amp;hl=en">Jonathan Francis</a><sup>†</sup> 
