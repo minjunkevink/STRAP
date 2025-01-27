@@ -41,7 +41,7 @@
 2. Install the repository:
     ```bash
     git clone https://github.com/WEIRDLabUW/STRAP.git
-    cd STRAP/strap
+    cd STRAP
     pip install -e .
     ```
 
