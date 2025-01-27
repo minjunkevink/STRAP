@@ -27,7 +27,7 @@
 <p align="center">
   <img width="100%" src="media/teaser.gif"/>
 </p>
-<p align="center">STRAP is a retrieval robustifies few-shot imitation learning by encoding trajectories with vision foundation models and retrieving sub-trajectories with subsequence dynamic time warping.
+<p align="center">STRAP is a retrieval method that robustifies few-shot imitation learning by encoding trajectories with vision foundation models and retrieving sub-trajectories with subsequence dynamic time warping.
 
 </p>
 <p align="center">This repository contains our implementation of the trajectory encoding and the retrieval algorithm.</p>
@@ -47,7 +47,7 @@
 
 You're all set!
 
-Code tested with Python 3.10, PyTroch 2.5.1, transformers 4.48.1, and CUDA version 12.4
+Code tested with Python 3.10, PyTorch 2.5.1, transformers 4.48.1, and CUDA version 12.4
 
 ## Replicate LIBERO results
 To replicate our results on the LIBERO datasets, first download the datasets using the `download_libero.py` script. 
@@ -59,7 +59,7 @@ Next, encode the datasets using `encode_datasets.py`. By default, the script enc
 python strap/embedding/encode_datasets.py
 ```
 
-Finally run `retrieval.py` to retrieve sub-trajectories from the offline dataset. By default, the script selects 3 demos from the "put both moka pots on the stove" task in LIBERO-10 (prior dataset) and retrieves the top 100 sub-trajectories from LIBERO-90 (offline dataset). The sub-trajectories have a minimum length of 20 and are retrieved using the DINOv2 embeddings of `agentview_rgb`.
+Finally, run `retrieval.py` to retrieve sub-trajectories from the offline dataset. By default, the script selects 3 demos from the "put both moka pots on the stove" task in LIBERO-10 (prior dataset) and retrieves the top 100 sub-trajectories from LIBERO-90 (offline dataset). The sub-trajectories have a minimum length of 20 and are retrieved using the DINOv2 embeddings of `agentview_rgb`.
 ```bash
 python strap/retrieval/retrieval.py
 ```
@@ -82,7 +82,7 @@ To retrieve from a custom dataset, follow these steps:
     
     See [configs/libero_hdf5_config.py](strap/configs/libero_hdf5_config.py) for an example.
 
-    **Tipp:** If you're dataset follows the LIBERO format you can reuse the helper functions in [configs/libero_file_functions.py](strap/configs/libero_file_functions.py).
+    **Tipp:** If your dataset follows the LIBERO format, you can reuse the helper functions in [configs/libero_file_functions.py](strap/configs/libero_file_functions.py).
 
     Configuration details: [here](strap/configs/README.md)
 
