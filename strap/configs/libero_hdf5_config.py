@@ -1,7 +1,7 @@
 import h5py
 import json
 
-from configs.libero_file_functions import initialize_libero_dataset
+from strap.configs.libero_file_functions import initialize_libero_dataset
 from strap.utils.file_utils import HDF5FileStructure, DatasetConfig
 from strap.utils.constants import REPO_ROOT
 from strap.configs.libero_file_functions import get_libero_lang_instruction, save_trajectory_result_libero

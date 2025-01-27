@@ -43,8 +43,8 @@ def save_trajectory_result_libero(
     """
     Save a single trajectory match result to the output file
     Args:
-        data_grp (h5py.File): open task dataset file, e.g., f["data"]
-        out_grp (h5py.File): open output file, e.g., f["data"]
+        data_grp (h5py.File): open task dataset file open at the root.
+        out_grp (h5py.File): open output file opend at the trajectories group, e.g., f["data"]
         result (TrajectoryMatchResult): trajectory match result
         args (RetrievalArgs): retrieval arguments
         dataset_config (DatasetConfig): config for task dataset

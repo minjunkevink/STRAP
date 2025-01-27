@@ -127,7 +127,7 @@ class DINOv2(BaseEncoder):
         self.model = Dinov2Model.from_pretrained(model_class)
         self.model.eval()
         self.model.to(device)
-        self.processor = AutoImageProcessor.from_pretrained(model_class)
+        self.processor = AutoImageProcessor.from_pretrained(model_class, use_fast=True)
 
         # model args
         self.embedding_file_key = "DINOv2"

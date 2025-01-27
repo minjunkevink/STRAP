@@ -6,7 +6,7 @@ import h5py
 import numba as nb
 import numpy as np
 
-from utils.file_utils import DatasetConfig, get_demo_grp
+from strap.utils.file_utils import DatasetConfig, get_demo_grp
 
 
 @dataclass
