@@ -35,7 +35,7 @@
 ## Setup
 1. Create the conda environment:
     ```bash
-    conda create -n strap python=3.9
+    conda create -n strap python=3.10
     conda activate strap
     ```
 2. Install the repository:
@@ -47,7 +47,7 @@
 
 You're all set!
 
-Code tested with Python 3.9, PyTroch 2.0.1, transformers 4.46.4, and CUDA version 11.7
+Code tested with Python 3.10, PyTroch 2.5.1, transformers 4.48.1, and CUDA version 12.4
 
 ## Replicate LIBERO results
 To replicate our results on the LIBERO datasets, first download the datasets using the `download_libero.py` script. 
