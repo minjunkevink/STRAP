@@ -14,14 +14,14 @@ def get_args():
     return RetrievalArgs(
         task_dataset=deepcopy(LIBERO_10_CONFIG),
         offline_dataset=deepcopy(LIBERO_90_CONFIG),
-        output_path=f"{REPO_ROOT}/data/retrieval_results/put_both_moka_pots_retrieved_dataset.hdf5",
+        output_path=f"{REPO_ROOT}/data/retrieval_results/stove-pot_retrieved_dataset.hdf5",
         model_key="DINOv2",
         image_keys="obs/agentview_rgb",
-        num_demos=3,
+        num_demos=5,
         frame_stack=5,
         action_chunk=5,
         top_k=100,
-        task_dataset_filter=".*put_both_moka.*",
+        task_dataset_filter=".*turn_on_the_stove_and_put_the_moka_pot_on_it.*",
         offline_dataset_filter=None,
         min_subtraj_len=20,
     )
