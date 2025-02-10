@@ -18,7 +18,8 @@
 <p align="center">
   <a href='https://openreview.net/pdf?id=EWfN9upi72'>paper</a> |
   <a href='https://arxiv.org/abs/2412.15182'>arxiv</a> |
-  <a href='https://weirdlabuw.github.io/strap/'>website</a>
+  <a href='https://weirdlabuw.github.io/strap/'>website</a> |
+  <a href='https://weirdlabuw.github.io/robomimic_strap/'>policy learning code</a>
 
 </p>
 
@@ -32,6 +33,7 @@
 </p>
 <p align="center">This repository contains our implementation of the trajectory encoding and the retrieval algorithm.</p>
 
+-------
 ## Setup
 1. Create the conda environment:
     ```bash
@@ -49,6 +51,7 @@ You're all set!
 
 Code tested with Python 3.10, PyTorch 2.5.1, transformers 4.48.1, and CUDA version 12.4
 
+-------
 ## Replicate LIBERO results
 To replicate our results on the LIBERO datasets, first download the datasets using the `download_libero.py` script. 
 ```bash
@@ -65,8 +68,9 @@ python strap/retrieval/retrieval.py
 ```
 
 The retrieval dataset `put_both_moka_pots_retrieved_dataset.hdf5` is saved in the `data/retrieval_results` folder! You can now use this dataset to train a policy using our 
-[policy learning code](test).
+[policy learning code](https://weirdlabuw.github.io/robomimic_strap).
 
+-------
 ## Retrieve from custom datasets
 We designed STRAP to be modular and deal with any dataset roughly following the [hdf5 structure](https://robomimic.github.io/docs/datasets/overview.html#dataset-structure) of robomimic.
 The embedding code doesn't modify the original dataset and the retrieval algorithm writes a single hdf5 file containing the retrieved sub-trajectories.
@@ -108,6 +112,7 @@ To retrieve from a custom dataset, follow these steps:
 
     Configuration details: [here](strap/retrieval/README.md)
 
+-------
 ## File Structure:
 ```bash
 ├── STRAP
@@ -127,8 +132,9 @@ To retrieve from a custom dataset, follow these steps:
 │   ├── requirements.txt
 ```
 
+-------
 ## Citation
-```aiignore
+```bibtex aiignore
 @article{memmel2024strap,
   title={STRAP: Robot Sub-Trajectory Retrieval for Augmented Policy Learning},
   author={Memmel, Marius and Berg, Jacob and Chen, Bingqing and Gupta, Abhishek and Francis, Jonathan},
