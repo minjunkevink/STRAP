@@ -30,8 +30,9 @@
 </p>
 <p align="center">STRAP is a retrieval method that robustifies few-shot imitation learning by encoding trajectories with vision foundation models and retrieving sub-trajectories with subsequence dynamic time warping.
 
-</p>
-<p align="center">This repository contains our implementation of the trajectory encoding and the retrieval algorithm.</p>
+-------
+# STRAP Sub-Trajectory Retrieval Repo
+This repository contains our implementation of the trajectory encoding and the retrieval algorithm.
 
 -------
 ## Setup
