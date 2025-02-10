@@ -19,7 +19,7 @@
   <a href='https://openreview.net/pdf?id=EWfN9upi72'>paper</a> |
   <a href='https://arxiv.org/abs/2412.15182'>arxiv</a> |
   <a href='https://weirdlabuw.github.io/strap/'>website</a> |
-  <a href='https://weirdlabuw.github.io/robomimic_strap/'>policy learning code</a>
+  <a href='https://github.com/WEIRDLabUW/robomimic_strap'>policy learning code</a>
 
 </p>
 
