@@ -69,7 +69,7 @@ python strap/retrieval/retrieval.py
 ```
 
 The retrieval dataset `put_both_moka_pots_retrieved_dataset.hdf5` is saved in the `data/retrieval_results` folder! You can now use this dataset to train a policy using our 
-[policy learning code](https://weirdlabuw.github.io/robomimic_strap).
+[policy learning code](https://github.com/WEIRDLabUW/robomimic_strap).
 
 -------
 ## Retrieve from custom datasets
