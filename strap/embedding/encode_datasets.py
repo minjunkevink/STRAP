@@ -1,6 +1,8 @@
+import os
 from strap.embedding.encoders import CLIP, DINOv2, PositionDifferenceEncoder
 from strap.embedding.embedding_helper import embed_dataset
-from strap.configs.libero_hdf5_config import LIBERO_90_CONFIG, LIBERO_10_CONFIG
+from strap.configs.libero_hdf5_config import get_libero_config
+from strap.utils.constants import EMBEDDED_DATA_DIR
 
 from tqdm.auto import tqdm
 
@@ -13,45 +15,56 @@ Notes:
 VERBOSE = True
 
 
-def get_encoders():
+def get_encoders(mode):
     """
-    Overwrite this method in order to change which encoders are created/used in the embedding process.
-    You can use this with your own custom encoders as well.
+    Returns encoders based on mode
 
-    Returns:
-        List[Encoder]: List of encoders to use for embedding
+    Args:
+        mode (str): 'STRAP' or '2D'
     """
-    # NOTE: define the encoders you want to use here
-    models = [
-        # DINOv2(model_class="facebook/dinov2-base", pooling="avg"),
-        # CLIP(model_class="openai/clip-vit-base-patch16", pooling="avg", mm_vision_select_layer=-2),
-        PositionDifferenceEncoder(),
-    ]
+    if mode == "2D":
+        # 2D tracking encoders
+        models = [PositionDifferenceEncoder()]
+    else:
+        # Default STRAP encoders
+        models = [
+            DINOv2(model_class="facebook/dinov2-base", pooling="avg"),
+            # CLIP(model_class="openai/clip-vit-base-patch16", pooling="avg", mm_vision_select_layer=-2),
+        ]
     return models
 
 
-def get_datasets():
+def get_datasets(mode):
     """
-    Overwrite this method in order to change which datasets are encoded.
-    You can use this with your own custom datasets as well.
+    Returns dataset configs with appropriate embedding folders
 
-    Returns:
-        List[DatasetConfig]: List of datasets to embed
+    Args:
+        mode (str): 'STRAP' or '2D'
     """
-    # NOTE: define the datasets you want to embed here
-    datasets = [LIBERO_90_CONFIG, LIBERO_10_CONFIG]
-    return datasets
+    # Get dataset configs with embedding folders
+    libero_10 = get_libero_config("libero_10", mode)
+    libero_90 = get_libero_config("libero_90", mode)
+    
+    # Make embedding directories
+    os.makedirs(libero_10.embedding_folder, exist_ok=True)
+    os.makedirs(libero_90.embedding_folder, exist_ok=True)
+    
+    return [libero_10, libero_90]
 
 
-def embed_datasets():
+def embed_datasets(mode="STRAP"):
     """
-    Embeds all datasets in get_datasets() using the encoders in get_encoders()
+    Embeds all datasets using the specified mode
+
+    Args:
+        mode (str): 'STRAP' or '2D'
     """
+    datasets = get_datasets(mode)
+    encoders = get_encoders(mode)
 
-    datasets = get_datasets()
-    encoders = get_encoders()
-
-    # NOTE: define the settings you want to use here
+    print(f"\033[94mEmbedding using {mode} mode\033[0m")
+    print(f"\033[94mEncoders: {[type(e).__name__ for e in encoders]}\033[0m")
+    
     # LIBERO's images are upside down, so flip them
     flip_images = True
     print("\033[94m" + f"Flip imgs is {flip_images}" + "\033[0m")
@@ -60,6 +73,10 @@ def embed_datasets():
     image_size = (224, 224)
 
     for dataset in tqdm(datasets, desc="Embedding datasets", disable=VERBOSE):
+        print(f"\033[94mEmbedding dataset: {dataset.name}\033[0m")
+        print(f"\033[94m  Source: {dataset.absolute_dataset_folder}\033[0m")
+        print(f"\033[94m  Target: {dataset.embedding_folder}\033[0m")
+        
         embed_dataset(
             dataset,
             encoders,
@@ -72,4 +89,10 @@ def embed_datasets():
 
 
 if __name__ == "__main__":
-    embed_datasets()
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="Embed datasets using STRAP or 2D methods")
+    parser.add_argument("--mode", type=str, default="STRAP", help="Either STRAP or 2D")
+    args = parser.parse_args()
+    
+    embed_datasets(args.mode)

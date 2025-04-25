@@ -49,6 +49,7 @@ class DatasetConfig:
 
         embedding_extension (str, optional): The file suffix of the embedded data
         exclude_path (List[str], optional): Paths to exclude in dataset folder. Excluded strings in any part of the path
+        embedding_folder (str, optional): Path to folder containing embedding files. If None, will use absolute_dataset_folder
     """
 
     name: str = None
@@ -58,9 +59,9 @@ class DatasetConfig:
     get_language_instruction: tp.Callable[[h5py.File, str], str] = None
     save_trajectory_match: tp.Callable = None
     initalize_save_file_metadata: tp.Callable = None
-
-    embedding_extension: str = "embeds.hdf5"
+    embedding_extension: str = "{model_key}.hdf5"
     exclude_path: tp.List[str] = field(default_factory=list)
+    embedding_folder: str = None
 
     def __post_init__(self):
         dataset_directory = Path(self.absolute_dataset_folder)
@@ -76,11 +77,21 @@ class DatasetConfig:
                     continue
                 self.dataset_paths.append(str(path))
 
-        # replace the part after the last . with the embedding extension
-        self.embedding_paths = [
-            str(path).rsplit(".", 1)[0] + "_" + self.embedding_extension
-            for path in self.dataset_paths
-        ]
+        # If embedding folder is specified, use that to construct embedding paths
+        if self.embedding_folder:
+            # Get just the filename (basename) of each dataset path
+            base_dataset_names = [os.path.basename(path) for path in self.dataset_paths]
+            # Construct embedding path with embedding folder and modified filename
+            self.embedding_paths = [
+                os.path.join(self.embedding_folder, path.rsplit(".", 1)[0] + "_" + self.embedding_extension)
+                for path in base_dataset_names
+            ]
+        else:
+            # Original behavior: create embedding paths in same folder as dataset
+            self.embedding_paths = [
+                str(path).rsplit(".", 1)[0] + "_" + self.embedding_extension
+                for path in self.dataset_paths
+            ]
 
     def filter_(self, regex_to_match: tp.List[str]):
         """

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 import torch
 from tqdm import tqdm
-
+import numpy as np
 
 class BaseEncoder(ABC):
     # Key to save the embeddings in the hdf5 embedding file
@@ -59,44 +59,38 @@ class BaseEncoder(ABC):
         return torch.cat(features)
 
 class PositionDifferenceEncoder(BaseEncoder):
-    embedding_file_key = "PositionDifference"
-    
-    def __init__(self, device="cpu"):
-        self.device = device
+    def __init__(self):
         super().__init__()
+        self.embedding_file_key = "PositionDiff"
     
-    def preprocess(self, positions, actions=None):
-        """
-        Process position data to compute differences between consecutive frames
-        
-        Args:
-            positions: A tensor or list of (frame, x, y) coordinates
-            actions: Not used in this encoder
-        """
-        # Convert to tensor if not already
-        if not isinstance(positions, torch.Tensor):
-            positions = torch.tensor(positions, dtype=torch.float32)
-            
-        # Extract x,y coordinates (assuming positions is [batch, frame, 3] where 3 = [frame_num, x, y])
-        xy_positions = positions[:, :, 1:3]
-        
-        # Compute differences (pad with zeros for first frame)
-        batch_size, num_frames, coords = xy_positions.shape
-        diffs = torch.zeros((batch_size, num_frames, coords), device=self.device)
-        
-        # For each batch, calculate difference between consecutive positions
-        diffs[:, 1:, :] = xy_positions[:, 1:, :] - xy_positions[:, :-1, :]
-        
-        return diffs.to(self.device)
+    def preprocess(self, image_batch):
+        # This just passes through the images, real processing happens in encode
+        return image_batch
     
-    def encode(self, position_diffs):
-        """
-        Return position differences as the embeddings
-        """
-        # We might want to normalize these differences
-        # Or apply some other transformation
-        # But for simplicity, we'll just return them directly
-        return position_diffs
+    def encode(self, video_frames):
+        # Convert batch of frames to an MP4 temporarily (or use frames directly if cotracker supports that)
+        # Initialize tracking at the gripper position in the first frame
+        # Run cotracker to get (x,y) positions for each frame
+        tracked_positions = self.cotracker(video_frames)
+        
+        # Calculate frame-to-frame differences
+        diff_vectors = np.zeros((len(tracked_positions)-1, 2))
+        for i in range(1, len(tracked_positions)):
+            diff_vectors[i-1] = [
+                tracked_positions[i][0] - tracked_positions[i-1][0],
+                tracked_positions[i][1] - tracked_positions[i-1][1]
+            ]
+        
+        # Pad first frame with zeros since we don't have a previous frame
+        diff_vectors = np.vstack([np.zeros((1, 2)), diff_vectors])
+        
+        return diff_vectors
+    
+    def cotracker(self, video_frames):
+        # Implement your cotracker interface here
+        # Should return a list of (x,y) coordinates for the gripper in each frame
+        # ...
+        pass
 
 class CLIP(BaseEncoder):
 
