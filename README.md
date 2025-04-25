@@ -1,38 +1,6 @@
-<p align="center">
-  <img width="30%" src="media/strap_logo.png"/>
-</p>
-<h1 align="center">Robot Sub-Trajectory Retrieval for Augmented Policy Learning</h1>
 
-<p align="center"> 
-  <a href="https://memmelma.github.io">Marius Memmel</a><sup>*</sup>, 
-  <a href="https://jacob33.com">Jacob Berg</a><sup>*</sup>, 
-  <a href="https://scholar.google.com/citations?user=LYt_2MgAAAAJ&amp;hl=en">Bingqing Chen</a>, 
-  <a href="https://abhishekunique.github.io/">Abhishek Gupta</a><sup>†</sup>, 
-  <a href="https://scholar.google.com/citations?user=7CLS0LwAAAAJ&amp;hl=en">Jonathan Francis</a><sup>†</sup> 
-</p>
-
-<p align="center">*equal contribution †equal advising</p>
-
-<p align="center">ICLR 2025</p>
-
-<p align="center">
-  <a href='https://openreview.net/pdf?id=EWfN9upi72'>paper</a> |
-  <a href='https://arxiv.org/abs/2412.15182'>arxiv</a> |
-  <a href='https://weirdlabuw.github.io/strap/'>website</a> |
-  <a href='https://github.com/WEIRDLabUW/robomimic_strap'>policy learning code</a>
-
-</p>
-
-<p align="center"></p>
-
-<p align="center">
-  <img width="100%" src="media/teaser.gif"/>
-</p>
-<p align="center">STRAP is a retrieval method that robustifies few-shot imitation learning by encoding trajectories with vision foundation models and retrieving sub-trajectories with subsequence dynamic time warping.
-
--------
-# STRAP Sub-Trajectory Retrieval Repo
-This repository contains our implementation of the trajectory encoding and the retrieval algorithm.
+# 2D-STRAP Retrieval Repo
+This repository has additional implementations to the the STRAP codebase to be able to easily benchmark a different method of subjratecory retireval that uses 2D relative (frame to frame) difference vectors as the retireval query. The relative 2D path is obtained by utilizing Molmo VLA with the query "point to the center of the robot gripper" then using CoTracker's point tracking fearture to track the arm. With complex scenes we use Grounded SAM 2 to object mask and simplify the scene for enhanced tracking.
 
 -------
 ## Setup
@@ -47,8 +15,13 @@ This repository contains our implementation of the trajectory encoding and the r
     cd STRAP
     pip install -e .
     ```
+3. (For 2D retrieval)
+  ```bash
+  TODO: add molmo, cotracker, sam2 download pipeline
+  ```
 
-You're all set!
+## Download Preprocessed Data
+If you want to directly access the preprocessed data for 2D, donwload it here (TODO: huggingface link to my dataset)
 
 Code tested with Python 3.10, PyTorch 2.5.1, transformers 4.48.1, and CUDA version 12.4
 

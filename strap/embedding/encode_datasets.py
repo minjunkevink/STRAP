@@ -1,4 +1,4 @@
-from strap.embedding.encoders import CLIP, DINOv2
+from strap.embedding.encoders import CLIP, DINOv2, PositionDifferenceEncoder
 from strap.embedding.embedding_helper import embed_dataset
 from strap.configs.libero_hdf5_config import LIBERO_90_CONFIG, LIBERO_10_CONFIG
 
@@ -23,9 +23,9 @@ def get_encoders():
     """
     # NOTE: define the encoders you want to use here
     models = [
-        DINOv2(model_class="facebook/dinov2-base", pooling="avg"),
+        # DINOv2(model_class="facebook/dinov2-base", pooling="avg"),
         # CLIP(model_class="openai/clip-vit-base-patch16", pooling="avg", mm_vision_select_layer=-2),
-        # ...
+        PositionDifferenceEncoder(),
     ]
     return models
 

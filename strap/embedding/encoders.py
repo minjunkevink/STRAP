@@ -58,6 +58,45 @@ class BaseEncoder(ABC):
                 features.append(outputs.cpu())
         return torch.cat(features)
 
+class PositionDifferenceEncoder(BaseEncoder):
+    embedding_file_key = "PositionDifference"
+    
+    def __init__(self, device="cpu"):
+        self.device = device
+        super().__init__()
+    
+    def preprocess(self, positions, actions=None):
+        """
+        Process position data to compute differences between consecutive frames
+        
+        Args:
+            positions: A tensor or list of (frame, x, y) coordinates
+            actions: Not used in this encoder
+        """
+        # Convert to tensor if not already
+        if not isinstance(positions, torch.Tensor):
+            positions = torch.tensor(positions, dtype=torch.float32)
+            
+        # Extract x,y coordinates (assuming positions is [batch, frame, 3] where 3 = [frame_num, x, y])
+        xy_positions = positions[:, :, 1:3]
+        
+        # Compute differences (pad with zeros for first frame)
+        batch_size, num_frames, coords = xy_positions.shape
+        diffs = torch.zeros((batch_size, num_frames, coords), device=self.device)
+        
+        # For each batch, calculate difference between consecutive positions
+        diffs[:, 1:, :] = xy_positions[:, 1:, :] - xy_positions[:, :-1, :]
+        
+        return diffs.to(self.device)
+    
+    def encode(self, position_diffs):
+        """
+        Return position differences as the embeddings
+        """
+        # We might want to normalize these differences
+        # Or apply some other transformation
+        # But for simplicity, we'll just return them directly
+        return position_diffs
 
 class CLIP(BaseEncoder):
 
@@ -161,3 +200,4 @@ class DINOv2(BaseEncoder):
             features = features[:, self.token_idx]
 
         return features
+
